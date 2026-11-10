@@ -34,15 +34,27 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);
   -webkit-backdrop-filter:saturate(1.6) blur(16px);backdrop-filter:saturate(1.6) blur(16px);
   padding-top:var(--safeT);border-bottom:1px solid var(--line)}
-.row{display:flex;align-items:center;gap:10px;padding:10px 16px 6px}
-h1{font-size:26px;letter-spacing:-.02em;margin:0;font-weight:800}
-.upd{flex:1;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:5px}
-.upd.late{color:var(--later)}
+.row{display:flex;align-items:center;gap:8px;padding:10px 16px 0}
+h1{font-size:26px;letter-spacing:-.02em;margin:0;font-weight:800;flex:1;cursor:pointer}
+.jlogo{width:34px;height:34px;border-radius:9px;object-fit:cover}
+.jhead{flex:1;display:flex;align-items:center;min-height:34px}
 .btn{text-decoration:none;display:inline-block;font-size:14px;font-weight:600;padding:7px 12px;border-radius:999px;background:var(--chip);color:var(--text)}
 .btn:active{opacity:.7}
 .btn.primary{background:var(--accent);color:#fff}
-.btn[hidden]{display:none}
-.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 16px 10px;scrollbar-width:none}
+.run{width:34px;height:34px;border-radius:50%;background:var(--chip);display:flex;align-items:center;justify-content:center;color:var(--text);flex:none}
+.run svg{width:18px;height:18px}
+.run.busy{color:var(--accent);background:color-mix(in srgb,var(--accent) 18%,transparent)}
+.run.busy svg{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.robot{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);padding:5px 16px 8px;white-space:nowrap;overflow:hidden}
+.robot span{overflow:hidden;text-overflow:ellipsis}
+.robot i{width:7px;height:7px;border-radius:50%;flex:none;background:var(--faint)}
+.robot.ok i{background:var(--read)}
+.robot.busy{color:var(--accent)}.robot.busy i{background:var(--accent)}
+.robot.late{color:var(--later)}.robot.late i{background:var(--later)}
+.robot.ko{color:#ff6b6b}.robot.ko i{background:#ff6b6b}
+.robot a{color:inherit}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:0 16px 10px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:none;display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;background:var(--chip);
   font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;transition:background .15s}
@@ -110,10 +122,14 @@ input:focus{border-color:var(--accent)}
   background:color-mix(in srgb,var(--bg) 90%,transparent);-webkit-backdrop-filter:saturate(1.6) blur(16px);backdrop-filter:saturate(1.6) blur(16px);
   border-top:1px solid var(--line);padding-bottom:var(--safeB)}
 .tabs .in{display:flex;width:100%;max-width:680px}
-.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 6px;font-size:11px;font-weight:600;color:var(--faint)}
+.tab{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 6px;font-size:10.5px;font-weight:600;color:var(--faint)}
 .tab svg{width:24px;height:24px}
+.tab img{width:24px;height:24px;border-radius:6px;object-fit:cover;opacity:.55;transition:opacity .15s}
 .tab.on{color:var(--accent)}
-.tab .ic{position:relative}
+.tab.on img{opacity:1}
+.tab.jt.on{color:var(--text)}
+.tab .ic{position:relative;height:24px}
+.tab .lb{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
 .tab .cnt{position:absolute;top:-4px;left:16px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--accent);color:#fff;
   font-size:11px;line-height:18px;text-align:center;font-variant-numeric:tabular-nums}
 .tab .cnt:empty{display:none}
@@ -130,9 +146,11 @@ input:focus{border-color:var(--accent)}
 <header class="top"><div class="wrap">
   <div class="row">
     <h1 id="appName">L'actu</h1>
-    <span class="upd" id="upd"></span>
+    <div class="jhead" id="jHead" hidden></div>
+    <button class="run" id="runBtn" aria-label="Lancer le robot" title="Lancer le robot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 5v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg></button>
     <button class="btn" id="allRead">Tout lu</button>
   </div>
+  <div class="robot" id="robot"><i></i><span id="robotTxt">…</span></div>
   <nav class="chips" id="chips"></nav>
 </div></header>
 
@@ -144,18 +162,19 @@ input:focus{border-color:var(--accent)}
       <button data-v="auto">Auto</button><button data-v="dark">Sombre</button><button data-v="light">Clair</button>
     </div></div></div>
 
-    <h3>Synchronisation entre appareils</h3>
+    <h3>Jeton GitHub (synchro + robot)</h3>
     <div class="group" id="syncBox"></div>
-    <p class="note">Le jeton reste sur cet appareil. Il faut le saisir une fois sur chaque appareil (iPhone, iPad, Mac).
-      Pour en créer un : <a href="https://github.com/settings/tokens/new?scopes=gist&description=L%27actu%20synchro" target="_blank" rel="noopener">github.com › jeton « gist »</a>,
-      durée « No expiration », seule la case <b>gist</b> cochée, puis « Generate token ».</p>
+    <p class="note">Un seul jeton sert à synchroniser tes appareils (lus, « À lire », réglages) et à lancer le robot avec le bouton ↻.
+      Il reste sur cet appareil : saisis-le une fois sur l'iPhone, l'iPad et le Mac.
+      Pour le créer : <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com › nouveau jeton</a>
+      (type « Fine-grained »), dépôt <b>lactu</b> seulement, droits <b>Actions : Read and write</b> et <b>Gists : Read and write</b>.</p>
 
     <h3>Robot</h3>
     <div class="group">
-      <div class="item"><div class="grow">Dernier passage<small id="robotWhen">—</small></div>
-        <a class="btn" id="robotBtn" target="_blank" rel="noopener" hidden>Lancer</a></div>
+      <div class="item"><div class="grow">État<small id="robotWhen">—</small></div>
+        <a class="btn" id="robotPage" target="_blank" rel="noopener" hidden>Voir sur GitHub</a></div>
     </div>
-    <p class="note" id="robotNote">« Lancer » ouvre la page du robot sur GitHub : touche <b>Run workflow</b>, puis le bouton vert. Les nouveaux articles arrivent environ 2 minutes après. GitHub saute parfois un passage programmé : ce n'est pas une panne.</p>
+    <p class="note">Le robot passe en principe toutes les 2 heures, mais GitHub saute parfois un passage : ce n'est pas une panne. Le bouton ↻ en haut le lance tout de suite ; les nouveaux articles arrivent environ 2 minutes après.</p>
 
     <h3>Sources</h3>
     <div class="group" id="srcBox"></div>
@@ -169,38 +188,43 @@ input:focus{border-color:var(--accent)}
   </section>
 </main>
 
-<nav class="tabs"><div class="in">
-  <button class="tab on" data-tab="inbox"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 13l2.5-7.5A2 2 0 0 1 7.4 4h9.2a2 2 0 0 1 1.9 1.5L21 13v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 13h5l1.5 2.5h5L16 13h5"/></svg><span class="cnt" id="cntInbox"></span></span>Inbox</button>
-  <button class="tab" data-tab="later"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg><span class="cnt" id="cntLater"></span></span>À lire</button>
-  <button class="tab" data-tab="settings"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></span>Réglages</button>
-</div></nav>
+<nav class="tabs"><div class="in" id="tabs"></div></nav>
 <div id="toast"><span id="toastMsg"></span><button id="toastUndo">Annuler</button></div>
 
 <script>
 'use strict';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const LS = 'lactu.state.v1', TK = 'lactu.token', GK = 'lactu.gist', SYNC_FILE = 'lactu-sync.json';
+const LS = 'lactu.state.v1', TK = 'lactu.token', GK = 'lactu.gist', SYNC_FILE = 'lactu-sync.json', WF = 'update.yml';
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
   del(k) { try { localStorage.removeItem(k); } catch {} },
 };
+const ICON = {
+  inbox: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 13l2.5-7.5A2 2 0 0 1 7.4 4h9.2a2 2 0 0 1 1.9 1.5L21 13v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 13h5l1.5 2.5h5L16 13h5"/></svg>',
+  later: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg>',
+  settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>',
+  paper: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5h13v14H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v8a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5"/></svg>',
+};
 
 // ----- État -----
-let data = { themes: [], sources: [], items: [] }, loadedAt = 0;
+let data = { themes: [], journals: [], sources: [], items: [] }, loadedAt = 0;
 let state = store.get(LS, null) || { m: {}, s: { theme: 'auto', t: 0 } };
 let tab = 'inbox', chip = 'all';
+const chipByTab = {};
 const keepVisible = new Set();
 const themeById = id => data.themes.find(t => t.id === id);
+const journalById = id => (data.journals || []).find(j => j.id === id);
 const srcById = id => data.sources.find(s => s.id === id);
+const curJournal = () => tab.startsWith('j:') ? journalById(tab.slice(2)) : null;
 const entry = id => state.m[id] || {};
 function save() { store.set(LS, state); scheduleSync(); }
 function setMark(id, patch) {
   const cur = state.m[id] || {};
   const it = data.items.find(x => x.id === id);
   const next = { ...cur, ...patch, t: Date.now() };
-  if (next.l && it) next.it = { t: it.t, u: it.u, d: it.d, th: it.th, src: it.src, img: it.img };
+  if (next.l && it) next.it = { t: it.t, u: it.u, d: it.d, th: it.th, j: it.j, sec: it.sec, src: it.src, img: it.img };
   if (!next.l) delete next.it;
   state.m[id] = next;
 }
@@ -230,62 +254,101 @@ function ago(ms) {
   const d = Math.round(h / 24);
   return d === 1 ? 'hier' : `il y a ${d} j`;
 }
+const hm = ms => new Date(ms).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', ' h ');
 
 // ----- Listes -----
+const unread = it => { const e = entry(it.id); return !e.r && !e.l; };
 function laterItems() {
   return Object.entries(state.m).filter(([, e]) => e.l).map(([id, e]) => {
     const it = data.items.find(x => x.id === id) || (e.it && { id, ...e.it });
     return it ? { ...it, _lt: e.t } : null;
   }).filter(Boolean).sort((a, b) => b._lt - a._lt);
 }
+function inTab(it) {
+  if (tab === 'inbox') return !!it.th;
+  const j = curJournal(); if (j) return it.j === j.id;
+  return true;
+}
 function baseList() {
   if (tab === 'later') return laterItems();
-  return data.items.filter(it => { const e = entry(it.id); return (!e.r && !e.l) || keepVisible.has(it.id); });
+  return data.items.filter(it => inTab(it) && (unread(it) || keepVisible.has(it.id)));
 }
-const unreadInbox = () => data.items.filter(it => { const e = entry(it.id); return !e.r && !e.l; });
+function chipMatch(it, c) {
+  if (c === 'all') return true;
+  if (curJournal()) return it.sec === c;
+  if (c.startsWith('j:')) return it.j === c.slice(2);
+  return it.th === c;
+}
+function chipList() {
+  const j = curJournal();
+  if (j) return [{ id: 'all', name: 'Tout' }, ...(j.sections || [])];
+  const list = [{ id: 'all', name: 'Tout' }, ...data.themes];
+  if (tab === 'later') (data.journals || []).forEach(x => list.push({ id: 'j:' + x.id, name: x.short || x.name, logo: x.logo }));
+  return list;
+}
+const countInbox = () => data.items.filter(it => it.th && unread(it)).length;
+const countJournal = id => data.items.filter(it => it.j === id && unread(it)).length;
+
+function renderTabs() {
+  const tabs = [{ id: 'inbox', name: 'Inbox', icon: ICON.inbox, n: countInbox() }];
+  (data.journals || []).forEach(j => tabs.push({ id: 'j:' + j.id, name: j.short || j.name, img: j.logo, n: countJournal(j.id), color: j.color, jt: true }));
+  tabs.push({ id: 'later', name: 'À lire', icon: ICON.later, n: laterItems().length });
+  tabs.push({ id: 'settings', name: 'Réglages', icon: ICON.settings });
+  $('#tabs').innerHTML = tabs.map(t => `<button class="tab${t.jt ? ' jt' : ''}${tab === t.id ? ' on' : ''}" data-tab="${esc(t.id)}">
+    <span class="ic">${t.img ? `<img src="${esc(t.img)}" alt="">` : t.icon || ICON.paper}<span class="cnt"${t.color ? ` style="background:${esc(t.color)}"` : ''}>${t.n || ''}</span></span><span class="lb">${esc(t.name)}</span></button>`).join('');
+}
 
 function renderChips() {
-  const base = tab === 'later' ? laterItems() : unreadInbox();
-  const count = id => base.filter(it => id === 'all' || it.th === id).length;
-  const list = [{ id: 'all', name: 'Tout' }, ...data.themes];
-  if (chip !== 'all' && !themeById(chip)) chip = 'all';
+  const base = tab === 'later' ? laterItems() : data.items.filter(it => inTab(it) && unread(it));
+  const list = chipList();
+  if (!list.some(c => c.id === chip)) chip = 'all';
   $('#chips').innerHTML = list.map(t => {
-    const ico = t.id === 'all' ? '' : t.logo ? `<img src="${esc(t.logo)}" alt="">` : `<span class="d" style="background:${esc(t.color)}"></span>`;
-    const n = count(t.id);
+    const ico = t.id === 'all' || curJournal() ? '' : t.logo ? `<img src="${esc(t.logo)}" alt="">` : `<span class="d" style="background:${esc(t.color || '#888')}"></span>`;
+    const n = base.filter(it => chipMatch(it, t.id)).length;
     return `<button class="chip${chip === t.id ? ' on' : ''}" data-chip="${esc(t.id)}">${ico}${esc(t.short || t.name)}<span class="n">${n || ''}</span></button>`;
   }).join('');
-  $('#cntInbox').textContent = unreadInbox().length || '';
-  $('#cntLater').textContent = laterItems().length || '';
 }
 
 function cardHtml(it) {
-  const th = themeById(it.th) || {}, src = srcById(it.src) || {};
+  const th = themeById(it.th) || {}, src = srcById(it.src) || {}, j = curJournal();
   const e = entry(it.id);
-  const logo = src.logo ? `<img src="${esc(src.logo)}" alt="">` : '';
-  const cls = (e.r && tab === 'inbox' ? ' isread' : '') + (e.l && tab === 'inbox' ? ' saved' : '');
-  const thLabel = (th.short || th.name || '') === (src.chip || src.name) ? '' : `<span>${esc(th.short || th.name || '')}</span>`;
+  let meta;
+  if (j) {
+    const sec = (j.sections || []).find(s => s.id === it.sec);
+    meta = `<span class="src">${esc(sec?.name || '')}</span>${it.th ? `<span class="d" style="background:${esc(th.color)}"></span><span>${esc(th.short || th.name)}</span>` : ''}<span>· ${ago(it.d)}</span>`;
+  } else {
+    const jj = journalById(it.j);
+    const logo = src.logo || jj?.logo;
+    const thLabel = it.th ? `<span class="d" style="background:${esc(th.color || '#888')}"></span><span>${esc(th.short || th.name || '')}</span>` : '';
+    meta = `${logo ? `<img src="${esc(logo)}" alt="">` : ''}<span class="src">${esc(src.chip || src.name || jj?.short || '')}</span>${thLabel}<span>· ${ago(it.d)}</span>`;
+  }
+  const cls = (e.r && tab !== 'later' ? ' isread' : '') + (e.l && tab !== 'later' ? ' saved' : '');
   return `<article class="card${cls}${it.img ? ' hasimg' : ''}" data-id="${esc(it.id)}">
     <div class="act l">À lire</div><div class="act r">${tab === 'later' ? 'Terminé' : 'Lu'}</div>
     <a class="body" href="${esc(it.u)}" target="_blank" rel="noopener" draggable="false">
-      <div class="txt">
-        <div class="meta">${logo}<span class="src">${esc(src.chip || src.name || '')}</span><span class="d" style="background:${esc(th.color || '#888')}"></span>${thLabel}<span>· ${ago(it.d)}</span></div>
-        <h2>${esc(it.t)}</h2>${it.s ? `<p>${esc(it.s)}</p>` : ''}
-      </div>
+      <div class="txt"><div class="meta">${meta}</div><h2>${esc(it.t)}</h2>${it.s ? `<p>${esc(it.s)}</p>` : ''}</div>
       ${it.img ? `<img class="thumb" src="${esc(it.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}
     </a>
     <div class="hov">${tab === 'later' ? '<button data-a="done">Terminé</button>' : '<button data-a="later">À lire</button><button data-a="read">Lu</button>'}</div>
   </article>`;
 }
 
+function renderHeader() {
+  const j = curJournal(), isSet = tab === 'settings';
+  $('#appName').hidden = !!j;
+  $('#jHead').hidden = !j;
+  if (j) $('#jHead').innerHTML = j.logo ? `<img class="jlogo" src="${esc(j.logo)}" alt="${esc(j.name)}" title="${esc(j.name)}">` : `<h1>${esc(j.short || j.name)}</h1>`;
+  $('#allRead').hidden = tab === 'later' || isSet;
+  $('#chips').hidden = isSet;
+}
+
 function render() {
   const isSet = tab === 'settings';
-  $('#settings').hidden = !isSet; $('#list').hidden = isSet; $('#chips').hidden = isSet;
-  $('#allRead').hidden = tab !== 'inbox';
-  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
-  renderUpd();
-  if (isSet) { renderSettings(); $('#cntInbox').textContent = unreadInbox().length || ''; $('#cntLater').textContent = laterItems().length || ''; return; }
+  $('#settings').hidden = !isSet; $('#list').hidden = isSet;
+  renderHeader(); renderTabs(); renderRobot();
+  if (isSet) { renderSettings(); return; }
   renderChips();
-  const items = baseList().filter(it => chip === 'all' || it.th === chip);
+  const items = baseList().filter(it => chipMatch(it, chip));
   if (!data.items.length && !loadedAt) { $('#list').innerHTML = '<div class="empty">Chargement…</div>'; return; }
   if (!items.length) {
     $('#list').innerHTML = tab === 'later'
@@ -293,27 +356,20 @@ function render() {
       : '<div class="empty"><b>✓</b>Tout est lu.<br>Les prochains articles arrivent avec le robot.</div>';
     return;
   }
-  $('#list').innerHTML = items.map(cardHtml).join('') + (tab === 'inbox' ? '<div class="hint">← lu · à lire →</div>' : '');
-}
-
-function renderUpd() {
-  const el = $('#upd');
-  if (!data.generated) { el.textContent = ''; return; }
-  el.textContent = 'Mis à jour ' + ago(data.generated);
-  el.classList.toggle('late', Date.now() - data.generated > 5 * 3600e3);
+  $('#list').innerHTML = items.map(cardHtml).join('') + (tab !== 'later' ? '<div class="hint">← lu · à lire →</div>' : '');
 }
 
 // ----- Actions -----
 let undoFn = null, toastTimer = 0;
 function toast(msg, undo) {
-  undoFn = undo; $('#toastMsg').textContent = msg; $('#toastUndo').hidden = !undo;
+  undoFn = undo || null; $('#toastMsg').textContent = msg; $('#toastUndo').hidden = !undo;
   $('#toast').classList.add('show'); clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { $('#toast').classList.remove('show'); undoFn = null; }, 4500);
 }
 $('#toastUndo').addEventListener('click', () => { if (undoFn) { undoFn(); undoFn = null; } $('#toast').classList.remove('show'); });
 
 function snapshot(ids) { const o = {}; ids.forEach(id => o[id] = state.m[id] ? { ...state.m[id] } : null); return o; }
-function restore(snap) { for (const [id, v] of Object.entries(snap)) { if (v) state.m[id] = { ...v, t: Date.now() }; else state.m[id] = { t: Date.now() }; keepVisible.delete(id); } save(); render(); }
+function restore(snap) { for (const [id, v] of Object.entries(snap)) { state.m[id] = v ? { ...v, t: Date.now() } : { t: Date.now() }; keepVisible.delete(id); } save(); render(); }
 
 function act(id, kind) {
   const snap = snapshot([id]);
@@ -330,25 +386,25 @@ function removeCard(card, dir, done) {
 }
 
 $('#allRead').addEventListener('click', () => {
-  const ids = baseList().filter(it => chip === 'all' || it.th === chip).map(it => it.id).filter(id => !entry(id).r);
+  const ids = baseList().filter(it => chipMatch(it, chip)).map(it => it.id).filter(id => !entry(id).r);
   if (!ids.length) return;
   const snap = snapshot(ids);
-  ids.forEach(id => { setMark(id, { r: 1, l: 0 }); keepVisible.delete(id); });
+  ids.forEach(id => setMark(id, { r: 1, l: 0 }));
   keepVisible.clear(); save(); render();
-  toast(`${ids.length} article${ids.length > 1 ? 's' : ''} marqué${ids.length > 1 ? 's' : ''} comme lu${ids.length > 1 ? 's' : ''}`, () => restore(snap));
+  const n = ids.length, s = n > 1 ? 's' : '';
+  toast(`${n} article${s} marqué${s} comme lu${s}`, () => restore(snap));
 });
 
 $('#chips').addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;
-  chip = b.dataset.chip; keepVisible.clear(); render(); window.scrollTo({ top: 0 });
+  chip = chipByTab[tab] = b.dataset.chip; keepVisible.clear(); render(); window.scrollTo({ top: 0 });
 });
-document.querySelector('.tabs').addEventListener('click', e => {
+$('#tabs').addEventListener('click', e => {
   const b = e.target.closest('.tab'); if (!b) return;
   if (tab === b.dataset.tab) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
-  tab = b.dataset.tab; keepVisible.clear(); render(); window.scrollTo({ top: 0 });
+  tab = b.dataset.tab; chip = chipByTab[tab] || 'all'; keepVisible.clear(); render(); window.scrollTo({ top: 0 });
 });
 
-// Boutons au survol (Mac) et clic sur l'article
 $('#list').addEventListener('click', e => {
   const btn = e.target.closest('.hov button');
   const card = e.target.closest('.card'); if (!card) return;
@@ -362,7 +418,7 @@ $('#list').addEventListener('click', e => {
   const link = e.target.closest('a.body');
   if (link) {
     if (swipeBlockClick) { e.preventDefault(); swipeBlockClick = false; return; }
-    if (tab === 'inbox') { setMark(id, { ...entry(id), r: 1 }); keepVisible.add(id); save(); setTimeout(render, 400); }
+    if (tab !== 'later') { setMark(id, { ...entry(id), r: 1 }); keepVisible.add(id); save(); setTimeout(render, 400); }
   }
 });
 
@@ -405,6 +461,72 @@ window.addEventListener('pointerup', endSwipe);
 window.addEventListener('pointercancel', endSwipe);
 $('#list').addEventListener('dragstart', e => e.preventDefault());
 
+// ----- Robot : état et lancement -----
+let run = null, runCheckedAt = 0, pollTimer = 0, launchedAt = 0;
+const token = () => store.get(TK, '');
+const gistId = () => store.get(GK, '');
+async function gh(path, opts = {}, auth = true) {
+  const headers = { Accept: 'application/vnd.github+json', ...(opts.body ? { 'Content-Type': 'application/json' } : {}) };
+  if (auth && token()) headers.Authorization = 'Bearer ' + token();
+  const r = await fetch('https://api.github.com' + path, { ...opts, headers });
+  if (r.status === 401) throw new Error('jeton refusé');
+  if (!r.ok) throw new Error('GitHub ' + r.status);
+  return r.status === 204 ? null : r.json();
+}
+function nextPass() {
+  const n = new Date(); n.setUTCSeconds(0, 0);
+  const t = new Date(n); t.setUTCMinutes(17);
+  while (t <= n || t.getUTCHours() % 2) t.setUTCHours(t.getUTCHours() + 1);
+  return t.getTime();
+}
+let wasBusy = false;
+async function checkRun() {
+  if (!data.repo) return;
+  try {
+    const r = await gh(`/repos/${data.repo}/actions/workflows/${WF}/runs?per_page=1`, {}, !!token());
+    run = r.workflow_runs?.[0] || null; runCheckedAt = Date.now();
+  } catch {}
+  const busy = !!(run && run.status !== 'completed');
+  if (busy) { launchedAt = 0; wasBusy = true; schedulePoll(10e3); }
+  else if (launchedAt && Date.now() - launchedAt < 90e3) schedulePoll(5e3);
+  else {
+    launchedAt = 0;
+    if (wasBusy) { wasBusy = false; setTimeout(load, 20e3); }
+  }
+  renderRobot();
+}
+function schedulePoll(ms) { clearTimeout(pollTimer); pollTimer = setTimeout(checkRun, ms); }
+function robotState() {
+  const busy = launchedAt || (run && run.status !== 'completed');
+  if (busy) return { cls: 'busy', txt: `Robot en cours… lancé ${ago(launchedAt || Date.parse(run.run_started_at || run.created_at))} · la liste se recharge à la fin` };
+  if (run && run.conclusion && run.conclusion !== 'success' && run.conclusion !== 'cancelled')
+    return { cls: 'ko', html: `Dernier passage en échec à ${hm(Date.parse(run.updated_at))} · <a href="${esc(run.html_url)}" target="_blank" rel="noopener">voir le détail</a>` };
+  if (!data.generated) return { cls: '', txt: 'Robot : pas encore de passage' };
+  if (Date.now() - data.generated > 3 * 3600e3) return { cls: 'late', txt: `Robot en retard · dernier passage ${ago(data.generated)} · GitHub en a sauté un` };
+  return { cls: 'ok', txt: `Robot à jour · passé à ${hm(data.generated)} · prochain vers ${hm(nextPass())}` };
+}
+function renderRobot() {
+  const st = robotState(), el = $('#robot');
+  el.className = 'robot ' + st.cls;
+  $('#robotTxt').innerHTML = st.html || esc(st.txt);
+  $('#runBtn').classList.toggle('busy', st.cls === 'busy');
+  $('#robot').hidden = tab === 'settings';
+}
+$('#runBtn').addEventListener('click', async () => {
+  if (!data.repo) return;
+  const page = `https://github.com/${data.repo}/actions/workflows/${WF}`;
+  if (launchedAt || (run && run.status !== 'completed')) { toast('Le robot tourne déjà'); return; }
+  if (!token()) { toast('Pas de jeton : ouverture de la page du robot'); window.open(page, '_blank', 'noopener'); return; }
+  try {
+    await gh(`/repos/${data.repo}/actions/workflows/${WF}/dispatches`, { method: 'POST', body: JSON.stringify({ ref: 'main' }) });
+    launchedAt = Date.now(); renderRobot(); toast('Robot lancé'); schedulePoll(6e3);
+  } catch (e) {
+    toast('Le jeton ne peut pas lancer le robot : ouverture de GitHub');
+    window.open(page, '_blank', 'noopener');
+  }
+});
+setInterval(() => { renderRobot(); }, 60e3);
+
 // ----- Réglages -----
 function renderSettings() {
   const st = data.sources || [];
@@ -417,35 +539,28 @@ function renderSettings() {
       <div class="grow">${esc(s.name)}<small>${esc(s.id)} · ${n} article${n > 1 ? 's' : ''} en ligne${s.status?.errors?.length && v !== 'rss' ? ' · ' + esc(s.status.errors[0]) : ''}</small></div>
       <span class="badge ${cls}">${lbl}</span></div>`;
   }).join('') : '<div class="item"><div class="grow">Aucune donnée pour l\'instant</div></div>';
-  $('#robotWhen').textContent = data.generated ? `${ago(data.generated)} · ${new Date(data.generated).toLocaleString('fr-FR', { weekday: 'short', hour: '2-digit', minute: '2-digit' })} · ${data.items.length} articles` : '—';
-  const rb = $('#robotBtn');
-  if (data.repo) { rb.href = `https://github.com/${data.repo}/actions/workflows/update.yml`; rb.hidden = false; } else rb.hidden = true;
+  const st2 = robotState();
+  $('#robotWhen').innerHTML = (st2.html || esc(st2.txt)) + (data.generated ? ` · ${data.items.length} articles` : '');
+  const rp = $('#robotPage');
+  if (data.repo) { rp.href = `https://github.com/${data.repo}/actions/workflows/${WF}`; rp.hidden = false; } else rp.hidden = true;
   renderSync();
 }
 
 // ----- Synchronisation (Gist privé) -----
 let syncStatus = '', syncTimer = 0, syncing = false;
-const token = () => store.get(TK, '');
-const gistId = () => store.get(GK, '');
-async function gh(path, opts = {}) {
-  const r = await fetch('https://api.github.com' + path, { ...opts, headers: { Authorization: 'Bearer ' + token(), Accept: 'application/vnd.github+json', ...(opts.body ? { 'Content-Type': 'application/json' } : {}) } });
-  if (r.status === 401) throw new Error('jeton refusé');
-  if (!r.ok) throw new Error('GitHub ' + r.status);
-  return r.json();
-}
 function renderSync() {
   const box = $('#syncBox');
   if (!token()) {
-    box.innerHTML = `<div class="item"><div class="grow"><input type="password" id="tokIn" placeholder="Colle ton jeton GitHub (ghp_…)" autocomplete="off" autocapitalize="off" spellcheck="false"></div></div>
-      <div class="item"><div class="grow"><small>${esc(syncStatus) || 'Lus, « À lire » et réglages, partagés entre tes appareils.'}</small></div><button class="btn primary" id="tokGo">Activer</button></div>`;
+    box.innerHTML = `<div class="item"><div class="grow"><input type="password" id="tokIn" placeholder="Colle ton jeton GitHub (github_pat_…)" autocomplete="off" autocapitalize="off" spellcheck="false"></div></div>
+      <div class="item"><div class="grow"><small>${esc(syncStatus) || 'Pour la synchro entre appareils et le bouton ↻.'}</small></div><button class="btn primary" id="tokGo">Activer</button></div>`;
     $('#tokGo').onclick = async () => {
       const v = $('#tokIn').value.trim(); if (!v) return;
-      store.set(TK, v); syncStatus = 'Connexion…'; renderSync();
-      try { await setupGist(); await sync(true); }
-      catch (e) { store.del(TK); store.del(GK); syncStatus = 'Échec : ' + e.message; renderSync(); }
+      store.set(TK, v); store.del(GK); syncStatus = 'Connexion…'; renderSync();
+      try { await setupGist(); await sync(true); checkRun(); }
+      catch (e) { store.del(TK); store.del(GK); syncStatus = 'Échec : ' + e.message + ' (vérifie le droit « Gists »)'; renderSync(); }
     };
   } else {
-    box.innerHTML = `<div class="item"><div class="grow">Synchronisation active<small>${esc(syncStatus || '—')}</small></div><button class="btn" id="syncNow">Synchroniser</button></div>
+    box.innerHTML = `<div class="item"><div class="grow">Jeton actif<small>${esc(syncStatus || '—')}</small></div><button class="btn" id="syncNow">Synchroniser</button></div>
       <div class="item"><div class="grow"><small>Retirer le jeton de cet appareil (les données restent sur les autres).</small></div><button class="btn" id="syncOff">Retirer</button></div>`;
     $('#syncNow').onclick = () => sync(true);
     $('#syncOff').onclick = () => { store.del(TK); store.del(GK); syncStatus = 'Jeton retiré de cet appareil.'; renderSync(); };
@@ -482,7 +597,7 @@ async function sync(manual) {
     if (JSON.stringify(merged) !== JSON.stringify(remote)) {
       await gh('/gists/' + gistId(), { method: 'PATCH', body: JSON.stringify({ files: { [SYNC_FILE]: { content: JSON.stringify(merged) } } }) });
     }
-    syncStatus = 'Synchronisé à ' + new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    syncStatus = 'Synchronisé à ' + hm(Date.now());
     if (changedLocal || manual) { applyTheme(); render(); } else if (tab === 'settings') renderSync();
   } catch (e) {
     if (e.message === 'GitHub 404') store.del(GK);
@@ -499,6 +614,7 @@ async function load() {
     const r = await fetch('data.json?t=' + Date.now(), { cache: 'no-store' });
     if (!r.ok) throw new Error(r.status);
     data = await r.json();
+    data.journals = data.journals || [];
     if (data.app?.name) { $('#appName').textContent = data.app.name; document.title = data.app.name; }
   } catch (e) {
     failed = true;
@@ -510,12 +626,12 @@ async function load() {
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState !== 'visible') return;
   if (Date.now() - loadedAt > 5 * 60e3) load();
+  if (Date.now() - runCheckedAt > 60e3) checkRun();
   sync(false);
 });
-setInterval(renderUpd, 60e3);
-$('#appName').addEventListener('click', () => { load(); sync(false); });
+$('#appName').addEventListener('click', () => { load(); checkRun(); sync(false); });
 
-applyTheme(); render(); load().then(() => sync(false));
+applyTheme(); render(); load().then(() => { checkRun(); sync(false); });
 </script>
 </body>
 </html>

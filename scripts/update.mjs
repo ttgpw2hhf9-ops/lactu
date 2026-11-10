@@ -94,9 +94,10 @@ function parseFeed(xml) {
     const rawDesc = unCdata(tag(b, 'description') || tag(b, 'summary') || tag(b, 'content:encoded') || tag(b, 'content'));
     const image = attr(b, 'media:content', 'url', /image|\.(jpe?g|png|webp)/i) || attr(b, 'media:thumbnail', 'url')
       || attr(b, 'enclosure', 'url', /image/i) || (decode(rawDesc).match(/<img[^>]+src=["']([^"']+)["']/i) || [])[1] || '';
-    const cat = (b.match(/<category[^>]*>([\s\S]*?)<\/category>/gi) || []).map(c => clean(c.replace(/<\/?category[^>]*>/gi, ''))).filter(Boolean).slice(0, 3).join(', ');
+    const cat = (b.match(/<(category|dc:subject)[^>]*>([\s\S]*?)<\/(category|dc:subject)>/gi) || []).map(c => clean(c.replace(/<\/?(category|dc:subject)[^>]*>/gi, ''))).filter(Boolean).slice(0, 4).join(', ');
     const source = clean(tag(b, 'source'));
-    return { title, link, date, summary: clean(rawDesc).slice(0, 240), image, cat, source };
+    const summary = clean(rawDesc).replace(/^L[’']ESSENTIEL\s*/i, '').slice(0, 220);
+    return { title, link, date, summary, image, cat, source };
   }).filter(it => it.title && /^https?:/.test(it.link));
 }
 
@@ -180,6 +181,7 @@ async function main() {
   const pages = pagesUrl();
   const themeRes = Object.fromEntries(themes.map(t => [t.id, compileKeywords(t.keywords)]));
   const themeIds = new Set(themes.map(t => t.id));
+  const journals = (cfg.journals || []).map(j => ({ ...j, _res: (j.sections || []).map(s => [s.id, compileKeywords(s.keywords)]) }));
 
   // Historique déjà publié
   let prev = { items: [] };
@@ -207,10 +209,14 @@ async function main() {
     const urlExclude = asList(src.urlExclude).map(r => new RegExp(r, 'i'));
     const titleStart = asList(src.titleStartExclude).map(norm);
     const exclude = compileKeywords(src.exclude);
+    const titleStrip = asList(src.titleStrip).map(r => new RegExp('^\\s*(?:' + r + ')\\s*', 'i'));
+    const themeByUrl = Object.entries(src.themeByUrl || {}).map(([r, t]) => [new RegExp(r, 'i'), t]);
+    const journal = journals.find(j => j.id === src.journal);
     let kept = 0;
     for (const it of [...freshKept, ...old]) {
       const link = canonical(it.link);
       const id = hash(link);
+      for (const r of titleStrip) it.title = it.title.replace(r, '');
       const tkey = norm(it.title);
       if (!tkey || seenId.has(id) || seenTitle.has(tkey)) continue;
       if (urlMatch.length && !urlMatch.some(r => r.test(link))) continue;
@@ -222,11 +228,12 @@ async function main() {
       // Classement par thème
       const score = id => countHits(themeRes[id] || [], text);
       let theme = themeIds.has(src.theme) ? src.theme : null;
+      for (const [r, t] of themeByUrl) if (r.test(link) && themeIds.has(t)) { theme = t; break; }
       const best = () => { let b = null, bs = 0; for (const t of themes) { if (t.id === src.theme) continue; const s = score(t.id); if (s > bs) { b = t.id; bs = s; } } return b; };
       if (src.dispatch) theme = best() || theme;
       else if (!theme) theme = best();
-      if (!theme) continue;
-      if ((src.filter || it._fallback) && !src.dispatch && (themeRes[theme] || []).length && !score(theme)) continue;
+      if (!theme && !journal) continue;
+      if (theme && (src.filter || it._fallback) && !src.dispatch && (themeRes[theme] || []).length && !score(theme)) continue;
 
       // Dates
       const prevIt = prevById.get(id);
@@ -237,7 +244,12 @@ async function main() {
       if (d < minDate) continue;
 
       seenId.add(id); seenTitle.add(tkey);
-      out.push({ id, t: it.title, u: link, d, f: first, s: it.summary || undefined, img: it.image || undefined, cat: it.cat || undefined, th: theme, src: src.id });
+      let sec;
+      if (journal) {
+        let bs = 0; sec = journal.defaultSection;
+        for (const [sid, res] of journal._res) { const sc = countHits(res, text); if (sc > bs) { bs = sc; sec = sid; } }
+      }
+      out.push({ id, t: it.title, u: link, d, f: first, s: it.summary || undefined, img: it.image || undefined, cat: it.cat || undefined, th: theme || undefined, j: journal?.id, sec, src: src.id });
       if (it._fresh) kept++;
     }
     statusOut.push({ id: src.id, via: st.via, n: items.length, kept, errors: st.errors.slice(0, 4) });
@@ -250,20 +262,26 @@ async function main() {
   const logoFor = async (id, url) => { if (!url) return ''; if (!logoCache.has(url)) logoCache.set(url, saveLogo(id, url, pages)); return logoCache.get(url); };
   const themesOut = [];
   for (const t of themes) themesOut.push({ id: t.id, name: t.name, short: t.short, color: t.color, logo: await logoFor('theme-' + t.id, t.logo) || undefined });
+  const journalsOut = [];
+  for (const j of journals) {
+    const used = new Set(items.filter(i => i.j === j.id).map(i => i.sec));
+    journalsOut.push({ id: j.id, name: j.name, short: j.short, color: j.color, logo: await logoFor('journal-' + j.id, j.logo) || undefined,
+      sections: (j.sections || []).map(s => ({ id: s.id, name: s.name })).filter(s => used.has(s.id)) });
+  }
   const sourcesOut = [];
   for (const s of sources) {
     const url = s.logo || (s.site ? `https://www.google.com/s2/favicons?domain=${domainOf(s.site)}&sz=128` : '');
     sourcesOut.push({ id: s.id, name: s.name, chip: s.chip, site: s.site, logo: await logoFor('src-' + s.id, url) || undefined, status: statusOut.find(x => x.id === s.id) });
   }
 
-  const data = { app: cfg.app || {}, generated: NOW, repo: REPO, themes: themesOut, sources: sourcesOut, items };
+  const data = { app: cfg.app || {}, generated: NOW, repo: REPO, themes: themesOut, journals: journalsOut, sources: sourcesOut, items };
   await mkdir(SITE_DIR, { recursive: true });
   await writeFile(path.join(SITE_DIR, 'data.json'), JSON.stringify(data));
 
   // Compte rendu (visible dans l'onglet Actions)
   const lines = ['| Source | Voie | Reçus | Nouveaux gardés | Problème |', '|---|---|---|---|---|',
     ...statusOut.map(s => `| ${s.id} | ${s.via} | ${s.n} | ${s.kept} | ${(s.errors[0] || '').replace(/\|/g, '/')} |`),
-    '', `**${items.length} articles publiés** (${Object.entries(items.reduce((m, it) => (m[it.th] = (m[it.th] || 0) + 1, m), {})).map(([k, v]) => `${k} ${v}`).join(', ')})`];
+    '', `**${items.length} articles publiés** — thèmes : ${Object.entries(items.reduce((m, it) => (it.th && (m[it.th] = (m[it.th] || 0) + 1), m), {})).map(([k, v]) => `${k} ${v}`).join(', ')} — journaux : ${Object.entries(items.reduce((m, it) => (it.j && (m[it.j + '/' + it.sec] = (m[it.j + '/' + it.sec] || 0) + 1), m), {})).map(([k, v]) => `${k} ${v}`).join(', ')}`];
   console.log(lines.join('\n'));
   if (process.env.GITHUB_STEP_SUMMARY) await writeFile(process.env.GITHUB_STEP_SUMMARY, '## L\'actu — passage du robot\n\n' + lines.join('\n') + '\n', { flag: 'a' });
 }
