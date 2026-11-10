@@ -112,7 +112,19 @@
         "CAC 40",
         "paradis fiscal",
         "patronat",
-        "Medef"
+        "Medef",
+        "épargne",
+        "Livret A",
+        "pauvreté",
+        "inégalité*",
+        "protection sociale",
+        "sécurité sociale",
+        "assurance chômage",
+        "politique de l'offre",
+        "salarié*",
+        "macroéconomi*",
+        "néolibéral*",
+        "capitalisme"
       ]
     },
     {
@@ -164,7 +176,12 @@
         "COP2*",
         "COP3*",
         "feux de forêt",
-        "mégafeu*"
+        "mégafeu*",
+        "agro-industri*",
+        "agroécolog*",
+        "climato*",
+        "décarbon*",
+        "sobriété"
       ]
     },
     {
@@ -555,6 +572,33 @@
         "/hardware/": "tech"
       },
       "logo": "https://www.google.com/s2/favicons?domain=canardpc.com&sz=128"
+    },
+    {
+      "id": "alteco",
+      "name": "Alternatives Économiques",
+      "chip": "Alter Éco",
+      "site": "https://www.alternatives-economiques.fr",
+      "rss": [
+        "https://www.alternatives-economiques.fr/rss.xml"
+      ],
+      "dispatch": true,
+      "logo": "https://www.google.com/s2/favicons?domain=alternatives-economiques.fr&sz=128",
+      "exclude": [
+        "conseils de lecture",
+        "conseil de lecture",
+        "Schtroumpf*"
+      ]
+    },
+    {
+      "id": "bonpote",
+      "name": "Bon Pote",
+      "chip": "Bon Pote",
+      "site": "https://bonpote.com",
+      "rss": [
+        "https://bonpote.com/feed/"
+      ],
+      "dispatch": true,
+      "logo": "https://www.google.com/s2/favicons?domain=bonpote.com&sz=128"
     }
   ],
   "journals": [
