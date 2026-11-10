@@ -36,10 +36,12 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);
   -webkit-backdrop-filter:saturate(1.6) blur(16px);backdrop-filter:saturate(1.6) blur(16px);
   padding-top:var(--safeT);border-bottom:1px solid var(--line)}
-.row{display:flex;align-items:center;gap:8px;padding:10px 16px 0}
-h1{font-size:26px;letter-spacing:-.02em;margin:0;font-weight:800;flex:1;cursor:pointer}
-.jlogo{width:34px;height:34px;border-radius:9px;object-fit:cover}
-.jhead{flex:1;display:flex;align-items:center;min-height:34px}
+.row{display:flex;align-items:center;gap:10px;padding:10px 16px 10px}
+h1{font-size:26px;line-height:1.1;letter-spacing:-.02em;margin:0;font-weight:800;cursor:pointer}
+.headlogo{width:56px;height:56px;border-radius:14px;flex:none;object-fit:cover;box-shadow:0 0 0 1px var(--line);cursor:pointer}
+.heads{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:5px;min-height:56px}
+.hl{display:flex;align-items:center;gap:8px;min-width:0}
+.hl .sp{flex:1}
 .btn{text-decoration:none;display:inline-block;font-size:14px;font-weight:600;padding:7px 12px;border-radius:999px;background:var(--chip);color:var(--text)}
 .btn:active{opacity:.7}
 .btn.primary{background:var(--accent);color:#fff}
@@ -48,8 +50,9 @@ h1{font-size:26px;letter-spacing:-.02em;margin:0;font-weight:800;flex:1;cursor:p
 .run.busy{color:var(--accent);background:color-mix(in srgb,var(--accent) 18%,transparent)}
 .run.busy svg{animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.robot{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);padding:5px 16px 8px;white-space:nowrap;overflow:hidden}
-.robot span{overflow:hidden;text-overflow:ellipsis}
+.robot{display:flex;align-items:flex-start;gap:6px;font-size:12px;line-height:1.35;color:var(--muted);min-width:0}
+.robot span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.robot i{margin-top:5px}
 .robot i{width:7px;height:7px;border-radius:50%;flex:none;background:var(--faint)}
 .robot.ok i{background:var(--read)}
 .robot.busy{color:var(--accent)}.robot.busy i{background:var(--accent)}
@@ -147,12 +150,17 @@ input:focus{border-color:var(--accent)}
 <body>
 <header class="top"><div class="wrap">
   <div class="row">
-    <h1 id="appName">L'actu</h1>
-    <div class="jhead" id="jHead" hidden></div>
-    <button class="run" id="runBtn" aria-label="Lancer le robot" title="Lancer le robot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 5v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg></button>
-    <button class="btn" id="allRead">Tout lu</button>
+    <img class="headlogo" id="headLogo" src="apple-touch-icon.png" alt="">
+    <div class="heads">
+      <div class="hl">
+        <h1 id="appName"><span id="appTitle">L'actu</span></h1>
+        <span class="sp"></span>
+        <button class="run" id="runBtn" aria-label="Lancer le robot" title="Lancer le robot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 5v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg></button>
+        <button class="btn" id="allRead">Tout lu</button>
+      </div>
+      <div class="robot" id="robot"><i></i><span id="robotTxt">…</span></div>
+    </div>
   </div>
-  <div class="robot" id="robot"><i></i><span id="robotTxt">…</span></div>
   <nav class="chips" id="chips"></nav>
 </div></header>
 
@@ -186,7 +194,7 @@ input:focus{border-color:var(--accent)}
       <div class="item"><div class="grow">Balayer vers la gauche<small>marque l'article comme lu</small></div><span class="badge ok">Lu</span></div>
       <div class="item"><div class="grow">Balayer vers la droite<small>le garde dans « À lire »</small></div><span class="badge warn">À lire</span></div>
     </div>
-    <p class="note" style="text-align:center;margin-top:24px">L'actu · version 3</p>
+    <p class="note" style="text-align:center;margin-top:24px">L'actu · version 4</p>
   </section>
 </main>
 
@@ -256,7 +264,8 @@ function ago(ms) {
   const d = Math.round(h / 24);
   return d === 1 ? 'hier' : `il y a ${d} j`;
 }
-const hm = ms => new Date(ms).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', ' h ');
+const hm = ms => { const d = new Date(ms); return `${d.getHours()}\u00a0h\u00a0${String(d.getMinutes()).padStart(2, '0')}`; };
+const nb = t => t.replace(/ /g, '\u00a0');
 
 // ----- Listes -----
 const unread = it => { const e = entry(it.id); return !e.r && !e.l; };
@@ -338,8 +347,10 @@ function cardHtml(it) {
 function renderHeader() {
   const j = curJournal(), isSet = tab === 'settings';
   $('#appName').hidden = !!j;
-  $('#jHead').hidden = !j;
-  if (j) $('#jHead').innerHTML = j.logo ? `<img class="jlogo" src="${esc(j.logo)}" alt="${esc(j.name)}" title="${esc(j.name)}">` : `<h1>${esc(j.short || j.name)}</h1>`;
+  const logo = $('#headLogo'), want = j ? (j.logo || '') : 'apple-touch-icon.png';
+  if (logo.getAttribute('src') !== want) logo.setAttribute('src', want);
+  logo.alt = j ? j.name : '';
+  logo.hidden = !want;
   $('#allRead').hidden = tab === 'later' || isSet;
   $('#chips').hidden = isSet;
 }
@@ -500,19 +511,19 @@ async function checkRun() {
 function schedulePoll(ms) { clearTimeout(pollTimer); pollTimer = setTimeout(checkRun, ms); }
 function robotState() {
   const busy = launchedAt || (run && run.status !== 'completed');
-  if (busy) return { cls: 'busy', txt: `Robot en cours… lancé ${ago(launchedAt || Date.parse(run.run_started_at || run.created_at))} · la liste se recharge à la fin` };
+  if (busy) return { cls: 'busy', txt: `Robot en cours… lancé ${ago(launchedAt || Date.parse(run.run_started_at || run.created_at))} · rechargement à la fin` };
   if (run && run.conclusion && run.conclusion !== 'success' && run.conclusion !== 'cancelled')
-    return { cls: 'ko', html: `Dernier passage en échec à ${hm(Date.parse(run.updated_at))} · <a href="${esc(run.html_url)}" target="_blank" rel="noopener">voir le détail</a>` };
+    return { cls: 'ko', html: `Robot en échec à ${hm(Date.parse(run.updated_at))} · <a href="${esc(run.html_url)}" target="_blank" rel="noopener">voir le détail</a>` };
   if (!data.generated) return { cls: '', txt: 'Robot : pas encore de passage' };
-  if (Date.now() - data.generated > 3 * 3600e3) return { cls: 'late', txt: `Robot en retard · dernier passage ${ago(data.generated)} · GitHub en a sauté un` };
-  return { cls: 'ok', txt: `Robot à jour · passé à ${hm(data.generated)} · prochain vers ${hm(nextPass())}` };
+  if (Date.now() - data.generated > 3 * 3600e3) return { cls: 'late', txt: `Robot en retard · passé ${ago(data.generated)} (GitHub a sauté un passage)` };
+  return { cls: 'ok', txt: `${nb('Robot à jour à')}\u00a0${hm(data.generated)} · ${nb('suivant vers')}\u00a0${hm(nextPass())}` };
 }
 function renderRobot() {
   const st = robotState(), el = $('#robot');
   el.className = 'robot ' + st.cls;
   $('#robotTxt').innerHTML = st.html || esc(st.txt);
   $('#runBtn').classList.toggle('busy', st.cls === 'busy');
-  $('#robot').hidden = tab === 'settings';
+  $('#robot').hidden = false;
 }
 $('#runBtn').addEventListener('click', async () => {
   if (!data.repo) return;
@@ -600,7 +611,7 @@ async function sync(manual) {
       await gh('/gists/' + gistId(), { method: 'PATCH', body: JSON.stringify({ files: { [SYNC_FILE]: { content: JSON.stringify(merged) } } }) });
     }
     syncStatus = 'Synchronisé à ' + hm(Date.now());
-    if (changedLocal || manual) { applyTheme(); render(); } else if (tab === 'settings') renderSync();
+    if (changedLocal || manual) { applyTheme(); if (sw) setTimeout(render, 800); else render(); } else if (tab === 'settings') renderSync();
   } catch (e) {
     if (e.message === 'GitHub 404') store.del(GK);
     syncStatus = 'Erreur de synchro : ' + e.message;
@@ -617,7 +628,7 @@ async function load() {
     if (!r.ok) throw new Error(r.status);
     data = await r.json();
     data.journals = data.journals || [];
-    if (data.app?.name) { $('#appName').textContent = data.app.name; document.title = data.app.name; }
+    if (data.app?.name) { $('#appTitle').textContent = data.app.name; document.title = data.app.name; }
   } catch (e) {
     failed = true;
     if (!data.items.length) $('#list').innerHTML = '<div class="empty"><b>⏳</b>Pas encore d\'articles.<br>Le robot n\'a peut-être pas encore tourné.</div>';
@@ -625,13 +636,18 @@ async function load() {
   loadedAt = Date.now();
   if (!failed || data.items.length || tab !== 'inbox') render();
 }
-document.addEventListener('visibilitychange', () => {
+// Rafraîchissement automatique : au retour sur l'appli et toutes les minutes tant qu'elle est affichée
+function refresh() {
   if (document.visibilityState !== 'visible') return;
   if (Date.now() - loadedAt > 5 * 60e3) load();
   if (Date.now() - runCheckedAt > 60e3) checkRun();
   sync(false);
-});
-$('#appName').addEventListener('click', () => { load(); checkRun(); sync(false); });
+}
+document.addEventListener('visibilitychange', refresh);
+window.addEventListener('focus', refresh);
+window.addEventListener('pageshow', refresh);
+setInterval(refresh, 60e3);
+['#appName', '#headLogo'].forEach(q => $(q).addEventListener('click', () => { load(); checkRun(); sync(false); }));
 
 applyTheme(); render(); load().then(() => { checkRun(); sync(false); });
 </script>
