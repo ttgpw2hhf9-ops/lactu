@@ -212,6 +212,7 @@ async function main() {
     const titleStrip = asList(src.titleStrip).map(r => new RegExp('^\\s*(?:' + r + ')\\s*', 'i'));
     const themeByUrl = Object.entries(src.themeByUrl || {}).map(([r, t]) => [new RegExp(r, 'i'), t]);
     const journal = journals.find(j => j.id === src.journal);
+    const extraRes = compileKeywords(src.keywords);
     let kept = 0;
     for (const it of [...freshKept, ...old]) {
       const link = canonical(it.link);
@@ -233,7 +234,7 @@ async function main() {
       if (src.dispatch) theme = best() || theme;
       else if (!theme) theme = best();
       if (!theme && !journal) continue;
-      if (theme && (src.filter || it._fallback) && !src.dispatch && (themeRes[theme] || []).length && !score(theme)) continue;
+      if (theme && (src.filter || it._fallback) && !src.dispatch && (themeRes[theme] || []).length && !score(theme) && !countHits(extraRes, text)) continue;
 
       // Dates
       const prevIt = prevById.get(id);

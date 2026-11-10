@@ -25,7 +25,9 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
-html,body{margin:0;background:var(--bg);color:var(--text)}
+html,body{margin:0;background:var(--bg);color:var(--text);max-width:100%;overflow-x:hidden;overscroll-behavior-x:none}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+@supports (overflow:clip){html,body{overflow-x:clip}}
 body{font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;
   min-height:100vh;padding-bottom:calc(64px + var(--safeB))}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
@@ -108,7 +110,7 @@ h1{font-size:26px;letter-spacing:-.02em;margin:0;font-weight:800;flex:1;cursor:p
 .seg{display:flex;background:var(--chip);border-radius:10px;padding:3px;width:100%}
 .seg button{flex:1;padding:8px 0;border-radius:8px;font-size:14px;font-weight:600;color:var(--muted)}
 .seg button.on{background:var(--bg2);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.18)}
-input[type=password],input[type=text]{width:100%;font:inherit;font-size:15px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);
+input[type=password],input[type=text]{width:100%;font:inherit;font-size:16px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);
   background:var(--bg);color:var(--text);outline:none}
 input:focus{border-color:var(--accent)}
 .badge{font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:999px;background:var(--chip);color:var(--muted);white-space:nowrap}
@@ -134,10 +136,10 @@ input:focus{border-color:var(--accent)}
   font-size:11px;line-height:18px;text-align:center;font-variant-numeric:tabular-nums}
 .tab .cnt:empty{display:none}
 /* Message bas */
-#toast{position:fixed;left:50%;bottom:calc(76px + var(--safeB));transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:20;
+#toast{position:fixed;left:12px;right:12px;margin:0 auto;width:max-content;max-width:calc(100% - 24px);bottom:calc(76px + var(--safeB));transform:translateY(20px);opacity:0;pointer-events:none;z-index:20;
   display:flex;align-items:center;gap:14px;padding:11px 16px;border-radius:12px;background:var(--chipOn);color:var(--chipOnText);
-  font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:all .2s;white-space:nowrap}
-#toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+  font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:opacity .2s,transform .2s}
+#toast.show{opacity:1;transform:none;pointer-events:auto}
 #toast button{color:var(--accent);font-weight:700}
 [data-theme=light] #toast button{color:#9cb8ff}
 </style>
@@ -184,7 +186,7 @@ input:focus{border-color:var(--accent)}
       <div class="item"><div class="grow">Balayer vers la gauche<small>marque l'article comme lu</small></div><span class="badge ok">Lu</span></div>
       <div class="item"><div class="grow">Balayer vers la droite<small>le garde dans « À lire »</small></div><span class="badge warn">À lire</span></div>
     </div>
-    <p class="note" style="text-align:center;margin-top:24px">L'actu · version 1</p>
+    <p class="note" style="text-align:center;margin-top:24px">L'actu · version 3</p>
   </section>
 </main>
 
