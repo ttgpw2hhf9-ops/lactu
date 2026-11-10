@@ -1,0 +1,278 @@
+{
+  "app": {
+    "name": "L'actu"
+  },
+  "settings": {
+    "historyDays": 14,
+    "maxItems": 500
+  },
+  "themes": [
+    {
+      "id": "tech",
+      "name": "Tech",
+      "color": "#4f8cff",
+      "keywords": [
+        "tech",
+        "technologie*",
+        "technologique*",
+        "numérique*",
+        "intelligence artificielle",
+        "IA",
+        "ChatGPT",
+        "OpenAI",
+        "Anthropic",
+        "Mistral AI",
+        "Nvidia",
+        "Apple",
+        "iPhone",
+        "Google",
+        "Microsoft",
+        "Meta",
+        "Amazon",
+        "Tesla",
+        "SpaceX",
+        "Elon Musk",
+        "Gafam",
+        "start-up",
+        "startup*",
+        "smartphone*",
+        "logiciel*",
+        "internet",
+        "réseaux sociaux",
+        "réseau social",
+        "TikTok",
+        "Instagram",
+        "Facebook",
+        "cyber*",
+        "piratage",
+        "hacker*",
+        "données personnelles",
+        "data center*",
+        "algorithme*",
+        "puce*",
+        "semi-conducteur*",
+        "robot*",
+        "informatique",
+        "ordinateur*",
+        "connecté*",
+        "satellite*",
+        "Silicon Valley",
+        "crypto*",
+        "bitcoin",
+        "appli",
+        "applis"
+      ]
+    },
+    {
+      "id": "eco",
+      "name": "Économie",
+      "color": "#f5a524",
+      "keywords": [
+        "économi*",
+        "inflation",
+        "croissance",
+        "PIB",
+        "récession",
+        "budget*",
+        "impôt*",
+        "fiscal*",
+        "taxe*",
+        "TVA",
+        "chômage",
+        "emploi*",
+        "salaire*",
+        "smic",
+        "retraite*",
+        "entreprise*",
+        "PME",
+        "industrie*",
+        "usine*",
+        "bourse*",
+        "marché*",
+        "banque*",
+        "BCE",
+        "Fed",
+        "taux",
+        "dette*",
+        "déficit*",
+        "commerce",
+        "commercial*",
+        "douane*",
+        "droits de douane",
+        "exportation*",
+        "importation*",
+        "pétrole",
+        "consommation",
+        "pouvoir d'achat",
+        "faillite*",
+        "licenciement*",
+        "investissement*",
+        "Insee",
+        "Wall Street",
+        "CAC 40",
+        "paradis fiscal",
+        "patronat",
+        "Medef"
+      ]
+    },
+    {
+      "id": "ecologie",
+      "name": "Écologie",
+      "color": "#2fbf71",
+      "keywords": [
+        "écolog*",
+        "climat*",
+        "réchauffement",
+        "environnement*",
+        "biodiversité",
+        "CO2",
+        "carbone",
+        "émissions",
+        "gaz à effet de serre",
+        "pollution",
+        "pollué*",
+        "polluant*",
+        "énergie* renouvelable*",
+        "éolien*",
+        "solaire",
+        "transition énergétique",
+        "charbon",
+        "sécheresse*",
+        "canicule*",
+        "inondation*",
+        "ouragan*",
+        "cyclone*",
+        "glacier*",
+        "banquise",
+        "océan*",
+        "corail",
+        "coraux",
+        "espèce*",
+        "faune",
+        "flore",
+        "forêt*",
+        "déforestation",
+        "pesticide*",
+        "glyphosate",
+        "plastique*",
+        "recyclage",
+        "déchet*",
+        "eau potable",
+        "agriculture biologique",
+        "bio",
+        "COP",
+        "COP2*",
+        "COP3*",
+        "feux de forêt",
+        "mégafeu*"
+      ]
+    },
+    {
+      "id": "ci",
+      "name": "Courrier international",
+      "short": "Courrier",
+      "color": "#e3001b",
+      "logo": "https://www.google.com/s2/favicons?domain=courrierinternational.com&sz=128"
+    }
+  ],
+  "sources": [
+    {
+      "id": "ci-eco",
+      "name": "Courrier international",
+      "chip": "Courrier",
+      "site": "https://www.courrierinternational.com",
+      "rss": [
+        "https://www.courrierinternational.com/feed/rubrique/economie/rss.xml"
+      ],
+      "theme": "eco",
+      "logo": "https://www.google.com/s2/favicons?domain=courrierinternational.com&sz=128"
+    },
+    {
+      "id": "ci-ecologie",
+      "name": "Courrier international",
+      "chip": "Courrier",
+      "site": "https://www.courrierinternational.com",
+      "rss": [
+        "https://www.courrierinternational.com/feed/rubrique/ecologie/rss.xml",
+        "https://www.courrierinternational.com/feed/rubrique/environnement/rss.xml"
+      ],
+      "theme": "ecologie",
+      "logo": "https://www.google.com/s2/favicons?domain=courrierinternational.com&sz=128"
+    },
+    {
+      "id": "ci-tout",
+      "name": "Courrier international",
+      "chip": "Courrier",
+      "site": "https://www.courrierinternational.com",
+      "rss": [
+        "https://www.courrierinternational.com/feed/all/rss.xml"
+      ],
+      "theme": "ci",
+      "dispatch": true,
+      "logo": "https://www.google.com/s2/favicons?domain=courrierinternational.com&sz=128"
+    },
+    {
+      "id": "fi-tech",
+      "name": "franceinfo",
+      "chip": "franceinfo",
+      "site": "https://www.franceinfo.fr",
+      "rss": [
+        "https://www.franceinfo.fr/internet.rss",
+        "https://www.franceinfo.fr/sciences/high-tech.rss"
+      ],
+      "theme": "tech",
+      "urlExclude": [
+        "/replay-"
+      ],
+      "titleStartExclude": [
+        "A suivre",
+        "À suivre",
+        "VIDEO",
+        "VIDÉO"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=franceinfo.fr&sz=128"
+    },
+    {
+      "id": "fi-eco",
+      "name": "franceinfo",
+      "chip": "franceinfo",
+      "site": "https://www.franceinfo.fr",
+      "rss": [
+        "https://www.franceinfo.fr/economie.rss"
+      ],
+      "theme": "eco",
+      "filter": true,
+      "urlExclude": [
+        "/replay-"
+      ],
+      "titleStartExclude": [
+        "A suivre",
+        "À suivre",
+        "VIDEO",
+        "VIDÉO"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=franceinfo.fr&sz=128"
+    },
+    {
+      "id": "fi-ecologie",
+      "name": "franceinfo",
+      "chip": "franceinfo",
+      "site": "https://www.franceinfo.fr",
+      "rss": [
+        "https://www.franceinfo.fr/environnement.rss"
+      ],
+      "theme": "ecologie",
+      "filter": true,
+      "urlExclude": [
+        "/replay-"
+      ],
+      "titleStartExclude": [
+        "A suivre",
+        "À suivre",
+        "VIDEO",
+        "VIDÉO"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=franceinfo.fr&sz=128"
+    }
+  ]
+}

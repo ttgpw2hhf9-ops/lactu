@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>L'actu</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="L'actu">
+<meta name="theme-color" content="#0f1115" id="themeColor">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-512.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{
+  --bg:#0f1115;--bg2:#141821;--card:#171b23;--line:#252a35;--text:#e9ecf2;--muted:#98a1b1;--faint:#5f6878;
+  --accent:#7aa2ff;--read:#2fbf71;--later:#f5a524;--chip:#1d222c;--chipOn:#e9ecf2;--chipOnText:#0f1115;
+  --shadow:0 1px 0 rgba(255,255,255,.03) inset;
+  --safeT:env(safe-area-inset-top,0px);--safeB:env(safe-area-inset-bottom,0px);
+}
+[data-theme=light]{
+  --bg:#f3f4f7;--bg2:#ffffff;--card:#ffffff;--line:#e3e6ec;--text:#14171d;--muted:#5d6676;--faint:#9aa1ad;
+  --accent:#2f62e6;--chip:#e7e9ef;--chipOn:#14171d;--chipOnText:#ffffff;--shadow:0 1px 2px rgba(20,23,29,.05);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;
+  min-height:100vh;padding-bottom:calc(64px + var(--safeB))}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.wrap{max-width:680px;margin:0 auto}
+/* En-tête */
+.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  -webkit-backdrop-filter:saturate(1.6) blur(16px);backdrop-filter:saturate(1.6) blur(16px);
+  padding-top:var(--safeT);border-bottom:1px solid var(--line)}
+.row{display:flex;align-items:center;gap:10px;padding:10px 16px 6px}
+h1{font-size:26px;letter-spacing:-.02em;margin:0;font-weight:800}
+.upd{flex:1;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:5px}
+.upd.late{color:var(--later)}
+.btn{text-decoration:none;display:inline-block;font-size:14px;font-weight:600;padding:7px 12px;border-radius:999px;background:var(--chip);color:var(--text)}
+.btn:active{opacity:.7}
+.btn.primary{background:var(--accent);color:#fff}
+.btn[hidden]{display:none}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 16px 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;background:var(--chip);
+  font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;transition:background .15s}
+.chip .d{width:8px;height:8px;border-radius:50%}
+.chip img{width:16px;height:16px;border-radius:4px}
+.chip .n{font-size:12px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.chip.on{background:var(--chipOn);color:var(--chipOnText)}
+.chip.on .n{color:inherit;opacity:.65}
+/* Liste */
+#list{padding:8px 0 24px}
+.card{position:relative;margin:0 12px 8px;border-radius:14px;overflow:hidden;background:var(--card);box-shadow:var(--shadow);
+  border:1px solid var(--line);touch-action:pan-y;transition:height .22s ease,margin .22s ease,opacity .22s}
+.card.gone{height:0!important;margin-top:0;margin-bottom:0;opacity:0;border-width:0}
+.act{position:absolute;inset:0;display:flex;align-items:center;padding:0 22px;font-weight:700;font-size:15px;color:#fff;opacity:0}
+.act.l{background:var(--later);justify-content:flex-start}
+.act.r{background:var(--read);justify-content:flex-end}
+.body{position:relative;display:flex;gap:12px;padding:12px 14px;background:var(--card);color:inherit;text-decoration:none;
+  will-change:transform;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.body.anim{transition:transform .22s ease}
+.txt{flex:1;min-width:0}
+.meta{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);margin-bottom:4px;white-space:nowrap;overflow:hidden}
+.meta img{width:16px;height:16px;border-radius:4px;flex:none}
+.meta .src{font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis}
+.meta .d{width:6px;height:6px;border-radius:50%;flex:none}
+.card h2{font-size:16.5px;line-height:1.3;margin:0;font-weight:700;letter-spacing:-.005em;
+  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.card p{margin:4px 0 0;font-size:14px;line-height:1.4;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.thumb{flex:none;width:84px;height:84px;border-radius:10px;object-fit:cover;background:var(--line)}
+.card.isread .body{opacity:.45}
+.card.saved .body::after{content:"";position:absolute;top:0;right:16px;width:10px;height:14px;background:var(--later);
+  clip-path:polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)}
+.hov{display:none}
+@media (hover:hover) and (pointer:fine){
+  .hov{display:flex;position:absolute;right:10px;top:8px;gap:6px;opacity:0;transition:opacity .15s}
+  .card:hover .hov{opacity:1}
+  .card.hasimg .hov{right:108px}
+  .hov button{font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--line)}
+  .hov button:hover{background:var(--chipOn);color:var(--chipOnText)}
+}
+.empty{text-align:center;color:var(--muted);padding:70px 30px}
+.empty b{display:block;font-size:40px;margin-bottom:8px}
+.hint{text-align:center;color:var(--faint);font-size:12.5px;padding:4px 20px 10px}
+/* Réglages */
+#settings{padding:12px 16px 30px}
+#settings h3{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:22px 4px 8px;font-weight:700}
+.group{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.item{display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--line);font-size:15px}
+.item:first-child{border-top:0}
+.item .grow{flex:1;min-width:0}
+.item small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px;overflow-wrap:anywhere}
+.seg{display:flex;background:var(--chip);border-radius:10px;padding:3px;width:100%}
+.seg button{flex:1;padding:8px 0;border-radius:8px;font-size:14px;font-weight:600;color:var(--muted)}
+.seg button.on{background:var(--bg2);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+input[type=password],input[type=text]{width:100%;font:inherit;font-size:15px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);
+  background:var(--bg);color:var(--text);outline:none}
+input:focus{border-color:var(--accent)}
+.badge{font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:999px;background:var(--chip);color:var(--muted);white-space:nowrap}
+.badge.ok{background:color-mix(in srgb,var(--read) 20%,transparent);color:var(--read)}
+.badge.warn{background:color-mix(in srgb,var(--later) 22%,transparent);color:var(--later)}
+.badge.ko{background:color-mix(in srgb,#ff5d5d 22%,transparent);color:#ff6b6b}
+.note{color:var(--muted);font-size:13px;line-height:1.45;margin:8px 4px 0}
+.note a,.item a{color:var(--accent)}
+/* Onglets */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;display:flex;justify-content:center;
+  background:color-mix(in srgb,var(--bg) 90%,transparent);-webkit-backdrop-filter:saturate(1.6) blur(16px);backdrop-filter:saturate(1.6) blur(16px);
+  border-top:1px solid var(--line);padding-bottom:var(--safeB)}
+.tabs .in{display:flex;width:100%;max-width:680px}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 6px;font-size:11px;font-weight:600;color:var(--faint)}
+.tab svg{width:24px;height:24px}
+.tab.on{color:var(--accent)}
+.tab .ic{position:relative}
+.tab .cnt{position:absolute;top:-4px;left:16px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--accent);color:#fff;
+  font-size:11px;line-height:18px;text-align:center;font-variant-numeric:tabular-nums}
+.tab .cnt:empty{display:none}
+/* Message bas */
+#toast{position:fixed;left:50%;bottom:calc(76px + var(--safeB));transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:20;
+  display:flex;align-items:center;gap:14px;padding:11px 16px;border-radius:12px;background:var(--chipOn);color:var(--chipOnText);
+  font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:all .2s;white-space:nowrap}
+#toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+#toast button{color:var(--accent);font-weight:700}
+[data-theme=light] #toast button{color:#9cb8ff}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="row">
+    <h1 id="appName">L'actu</h1>
+    <span class="upd" id="upd"></span>
+    <button class="btn" id="allRead">Tout lu</button>
+  </div>
+  <nav class="chips" id="chips"></nav>
+</div></header>
+
+<main class="wrap">
+  <div id="list"></div>
+  <section id="settings" hidden>
+    <h3>Apparence</h3>
+    <div class="group"><div class="item"><div class="seg" id="themeSeg">
+      <button data-v="auto">Auto</button><button data-v="dark">Sombre</button><button data-v="light">Clair</button>
+    </div></div></div>
+
+    <h3>Synchronisation entre appareils</h3>
+    <div class="group" id="syncBox"></div>
+    <p class="note">Le jeton reste sur cet appareil. Il faut le saisir une fois sur chaque appareil (iPhone, iPad, Mac).
+      Pour en créer un : <a href="https://github.com/settings/tokens/new?scopes=gist&description=L%27actu%20synchro" target="_blank" rel="noopener">github.com › jeton « gist »</a>,
+      durée « No expiration », seule la case <b>gist</b> cochée, puis « Generate token ».</p>
+
+    <h3>Robot</h3>
+    <div class="group">
+      <div class="item"><div class="grow">Dernier passage<small id="robotWhen">—</small></div>
+        <a class="btn" id="robotBtn" target="_blank" rel="noopener" hidden>Lancer</a></div>
+    </div>
+    <p class="note" id="robotNote">« Lancer » ouvre la page du robot sur GitHub : touche <b>Run workflow</b>, puis le bouton vert. Les nouveaux articles arrivent environ 2 minutes après. GitHub saute parfois un passage programmé : ce n'est pas une panne.</p>
+
+    <h3>Sources</h3>
+    <div class="group" id="srcBox"></div>
+
+    <h3>Lecture</h3>
+    <div class="group">
+      <div class="item"><div class="grow">Balayer vers la gauche<small>marque l'article comme lu</small></div><span class="badge ok">Lu</span></div>
+      <div class="item"><div class="grow">Balayer vers la droite<small>le garde dans « À lire »</small></div><span class="badge warn">À lire</span></div>
+    </div>
+    <p class="note" style="text-align:center;margin-top:24px">L'actu · version 1</p>
+  </section>
+</main>
+
+<nav class="tabs"><div class="in">
+  <button class="tab on" data-tab="inbox"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 13l2.5-7.5A2 2 0 0 1 7.4 4h9.2a2 2 0 0 1 1.9 1.5L21 13v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 13h5l1.5 2.5h5L16 13h5"/></svg><span class="cnt" id="cntInbox"></span></span>Inbox</button>
+  <button class="tab" data-tab="later"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg><span class="cnt" id="cntLater"></span></span>À lire</button>
+  <button class="tab" data-tab="settings"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></span>Réglages</button>
+</div></nav>
+<div id="toast"><span id="toastMsg"></span><button id="toastUndo">Annuler</button></div>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LS = 'lactu.state.v1', TK = 'lactu.token', GK = 'lactu.gist', SYNC_FILE = 'lactu-sync.json';
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} },
+};
+
+// ----- État -----
+let data = { themes: [], sources: [], items: [] }, loadedAt = 0;
+let state = store.get(LS, null) || { m: {}, s: { theme: 'auto', t: 0 } };
+let tab = 'inbox', chip = 'all';
+const keepVisible = new Set();
+const themeById = id => data.themes.find(t => t.id === id);
+const srcById = id => data.sources.find(s => s.id === id);
+const entry = id => state.m[id] || {};
+function save() { store.set(LS, state); scheduleSync(); }
+function setMark(id, patch) {
+  const cur = state.m[id] || {};
+  const it = data.items.find(x => x.id === id);
+  const next = { ...cur, ...patch, t: Date.now() };
+  if (next.l && it) next.it = { t: it.t, u: it.u, d: it.d, th: it.th, src: it.src, img: it.img };
+  if (!next.l) delete next.it;
+  state.m[id] = next;
+}
+
+// ----- Apparence -----
+const mq = matchMedia('(prefers-color-scheme: dark)');
+function applyTheme() {
+  const v = state.s.theme || 'auto';
+  const t = v === 'auto' ? (mq.matches ? 'dark' : 'light') : v;
+  document.documentElement.dataset.theme = t;
+  $('#themeColor').content = t === 'dark' ? '#0f1115' : '#f3f4f7';
+  document.querySelectorAll('#themeSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+}
+mq.addEventListener?.('change', applyTheme);
+$('#themeSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  state.s = { theme: b.dataset.v, t: Date.now() }; save(); applyTheme();
+});
+
+// ----- Dates -----
+function ago(ms) {
+  const m = Math.round((Date.now() - ms) / 60000);
+  if (m < 1) return "à l'instant";
+  if (m < 60) return `il y a ${m} min`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `il y a ${h} h`;
+  const d = Math.round(h / 24);
+  return d === 1 ? 'hier' : `il y a ${d} j`;
+}
+
+// ----- Listes -----
+function laterItems() {
+  return Object.entries(state.m).filter(([, e]) => e.l).map(([id, e]) => {
+    const it = data.items.find(x => x.id === id) || (e.it && { id, ...e.it });
+    return it ? { ...it, _lt: e.t } : null;
+  }).filter(Boolean).sort((a, b) => b._lt - a._lt);
+}
+function baseList() {
+  if (tab === 'later') return laterItems();
+  return data.items.filter(it => { const e = entry(it.id); return (!e.r && !e.l) || keepVisible.has(it.id); });
+}
+const unreadInbox = () => data.items.filter(it => { const e = entry(it.id); return !e.r && !e.l; });
+
+function renderChips() {
+  const base = tab === 'later' ? laterItems() : unreadInbox();
+  const count = id => base.filter(it => id === 'all' || it.th === id).length;
+  const list = [{ id: 'all', name: 'Tout' }, ...data.themes];
+  if (chip !== 'all' && !themeById(chip)) chip = 'all';
+  $('#chips').innerHTML = list.map(t => {
+    const ico = t.id === 'all' ? '' : t.logo ? `<img src="${esc(t.logo)}" alt="">` : `<span class="d" style="background:${esc(t.color)}"></span>`;
+    const n = count(t.id);
+    return `<button class="chip${chip === t.id ? ' on' : ''}" data-chip="${esc(t.id)}">${ico}${esc(t.short || t.name)}<span class="n">${n || ''}</span></button>`;
+  }).join('');
+  $('#cntInbox').textContent = unreadInbox().length || '';
+  $('#cntLater').textContent = laterItems().length || '';
+}
+
+function cardHtml(it) {
+  const th = themeById(it.th) || {}, src = srcById(it.src) || {};
+  const e = entry(it.id);
+  const logo = src.logo ? `<img src="${esc(src.logo)}" alt="">` : '';
+  const cls = (e.r && tab === 'inbox' ? ' isread' : '') + (e.l && tab === 'inbox' ? ' saved' : '');
+  const thLabel = (th.short || th.name || '') === (src.chip || src.name) ? '' : `<span>${esc(th.short || th.name || '')}</span>`;
+  return `<article class="card${cls}${it.img ? ' hasimg' : ''}" data-id="${esc(it.id)}">
+    <div class="act l">À lire</div><div class="act r">${tab === 'later' ? 'Terminé' : 'Lu'}</div>
+    <a class="body" href="${esc(it.u)}" target="_blank" rel="noopener" draggable="false">
+      <div class="txt">
+        <div class="meta">${logo}<span class="src">${esc(src.chip || src.name || '')}</span><span class="d" style="background:${esc(th.color || '#888')}"></span>${thLabel}<span>· ${ago(it.d)}</span></div>
+        <h2>${esc(it.t)}</h2>${it.s ? `<p>${esc(it.s)}</p>` : ''}
+      </div>
+      ${it.img ? `<img class="thumb" src="${esc(it.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}
+    </a>
+    <div class="hov">${tab === 'later' ? '<button data-a="done">Terminé</button>' : '<button data-a="later">À lire</button><button data-a="read">Lu</button>'}</div>
+  </article>`;
+}
+
+function render() {
+  const isSet = tab === 'settings';
+  $('#settings').hidden = !isSet; $('#list').hidden = isSet; $('#chips').hidden = isSet;
+  $('#allRead').hidden = tab !== 'inbox';
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  renderUpd();
+  if (isSet) { renderSettings(); $('#cntInbox').textContent = unreadInbox().length || ''; $('#cntLater').textContent = laterItems().length || ''; return; }
+  renderChips();
+  const items = baseList().filter(it => chip === 'all' || it.th === chip);
+  if (!data.items.length && !loadedAt) { $('#list').innerHTML = '<div class="empty">Chargement…</div>'; return; }
+  if (!items.length) {
+    $('#list').innerHTML = tab === 'later'
+      ? '<div class="empty"><b>🔖</b>Rien à lire pour l\'instant.<br>Balaye un article vers la droite pour le garder ici.</div>'
+      : '<div class="empty"><b>✓</b>Tout est lu.<br>Les prochains articles arrivent avec le robot.</div>';
+    return;
+  }
+  $('#list').innerHTML = items.map(cardHtml).join('') + (tab === 'inbox' ? '<div class="hint">← lu · à lire →</div>' : '');
+}
+
+function renderUpd() {
+  const el = $('#upd');
+  if (!data.generated) { el.textContent = ''; return; }
+  el.textContent = 'Mis à jour ' + ago(data.generated);
+  el.classList.toggle('late', Date.now() - data.generated > 5 * 3600e3);
+}
+
+// ----- Actions -----
+let undoFn = null, toastTimer = 0;
+function toast(msg, undo) {
+  undoFn = undo; $('#toastMsg').textContent = msg; $('#toastUndo').hidden = !undo;
+  $('#toast').classList.add('show'); clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { $('#toast').classList.remove('show'); undoFn = null; }, 4500);
+}
+$('#toastUndo').addEventListener('click', () => { if (undoFn) { undoFn(); undoFn = null; } $('#toast').classList.remove('show'); });
+
+function snapshot(ids) { const o = {}; ids.forEach(id => o[id] = state.m[id] ? { ...state.m[id] } : null); return o; }
+function restore(snap) { for (const [id, v] of Object.entries(snap)) { if (v) state.m[id] = { ...v, t: Date.now() }; else state.m[id] = { t: Date.now() }; keepVisible.delete(id); } save(); render(); }
+
+function act(id, kind) {
+  const snap = snapshot([id]);
+  if (kind === 'read') { setMark(id, { r: 1, l: 0 }); keepVisible.delete(id); toast('Marqué comme lu', () => restore(snap)); }
+  if (kind === 'later') { setMark(id, { l: 1, r: 0 }); keepVisible.delete(id); toast('Ajouté à « À lire »', () => restore(snap)); }
+  if (kind === 'done') { setMark(id, { l: 0, r: 1 }); toast('Retiré de « À lire »', () => restore(snap)); }
+  save();
+}
+function removeCard(card, dir, done) {
+  const body = card.querySelector('.body');
+  card.style.height = card.offsetHeight + 'px';
+  body.classList.add('anim'); body.style.transform = `translateX(${dir * 110}%)`;
+  setTimeout(() => { card.classList.add('gone'); setTimeout(() => { done(); render(); }, 220); }, 160);
+}
+
+$('#allRead').addEventListener('click', () => {
+  const ids = baseList().filter(it => chip === 'all' || it.th === chip).map(it => it.id).filter(id => !entry(id).r);
+  if (!ids.length) return;
+  const snap = snapshot(ids);
+  ids.forEach(id => { setMark(id, { r: 1, l: 0 }); keepVisible.delete(id); });
+  keepVisible.clear(); save(); render();
+  toast(`${ids.length} article${ids.length > 1 ? 's' : ''} marqué${ids.length > 1 ? 's' : ''} comme lu${ids.length > 1 ? 's' : ''}`, () => restore(snap));
+});
+
+$('#chips').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  chip = b.dataset.chip; keepVisible.clear(); render(); window.scrollTo({ top: 0 });
+});
+document.querySelector('.tabs').addEventListener('click', e => {
+  const b = e.target.closest('.tab'); if (!b) return;
+  if (tab === b.dataset.tab) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+  tab = b.dataset.tab; keepVisible.clear(); render(); window.scrollTo({ top: 0 });
+});
+
+// Boutons au survol (Mac) et clic sur l'article
+$('#list').addEventListener('click', e => {
+  const btn = e.target.closest('.hov button');
+  const card = e.target.closest('.card'); if (!card) return;
+  const id = card.dataset.id;
+  if (btn) {
+    e.preventDefault();
+    const k = btn.dataset.a;
+    removeCard(card, k === 'later' ? 1 : -1, () => act(id, k));
+    return;
+  }
+  const link = e.target.closest('a.body');
+  if (link) {
+    if (swipeBlockClick) { e.preventDefault(); swipeBlockClick = false; return; }
+    if (tab === 'inbox') { setMark(id, { ...entry(id), r: 1 }); keepVisible.add(id); save(); setTimeout(render, 400); }
+  }
+});
+
+// ----- Balayage -----
+let sw = null, swipeBlockClick = false;
+$('#list').addEventListener('pointerdown', e => {
+  const body = e.target.closest('a.body'); if (!body || e.button > 0) return;
+  sw = { body, card: body.closest('.card'), x: e.clientX, y: e.clientY, dx: 0, on: false, id: e.pointerId };
+});
+window.addEventListener('pointermove', e => {
+  if (!sw || e.pointerId !== sw.id) return;
+  const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
+  if (!sw.on) {
+    if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) { sw = null; return; }
+    if (Math.abs(dx) < 10) return;
+    sw.on = true; sw.body.classList.remove('anim');
+    try { sw.body.setPointerCapture(e.pointerId); } catch {}
+  }
+  sw.dx = dx;
+  sw.body.style.transform = `translateX(${dx}px)`;
+  const w = sw.card.offsetWidth, p = Math.min(1, Math.abs(dx) / (w * .3));
+  sw.card.querySelector('.act.l').style.opacity = dx > 0 ? p : 0;
+  sw.card.querySelector('.act.r').style.opacity = dx < 0 ? p : 0;
+});
+function endSwipe(e) {
+  if (!sw || (e && e.pointerId !== sw.id)) return;
+  const s = sw; sw = null;
+  if (!s.on) return;
+  swipeBlockClick = true; setTimeout(() => swipeBlockClick = false, 350);
+  const w = s.card.offsetWidth, id = s.card.dataset.id;
+  if (Math.abs(s.dx) > w * .3) {
+    const kind = tab === 'later' ? 'done' : s.dx < 0 ? 'read' : 'later';
+    removeCard(s.card, s.dx < 0 ? -1 : 1, () => act(id, kind));
+  } else {
+    s.body.classList.add('anim'); s.body.style.transform = '';
+    s.card.querySelectorAll('.act').forEach(a => a.style.opacity = 0);
+  }
+}
+window.addEventListener('pointerup', endSwipe);
+window.addEventListener('pointercancel', endSwipe);
+$('#list').addEventListener('dragstart', e => e.preventDefault());
+
+// ----- Réglages -----
+function renderSettings() {
+  const st = data.sources || [];
+  $('#srcBox').innerHTML = st.length ? st.map(s => {
+    const v = s.status?.via;
+    const cls = v === 'rss' ? 'ok' : v === 'échec' ? 'ko' : 'warn';
+    const lbl = v === 'rss' ? 'RSS' : v === 'google' ? 'Google Actu' : v === 'bing' ? 'Bing Actu' : 'Échec';
+    const n = data.items.filter(i => i.src === s.id).length;
+    return `<div class="item">${s.logo ? `<img src="${esc(s.logo)}" alt="" style="width:22px;height:22px;border-radius:5px">` : ''}
+      <div class="grow">${esc(s.name)}<small>${esc(s.id)} · ${n} article${n > 1 ? 's' : ''} en ligne${s.status?.errors?.length && v !== 'rss' ? ' · ' + esc(s.status.errors[0]) : ''}</small></div>
+      <span class="badge ${cls}">${lbl}</span></div>`;
+  }).join('') : '<div class="item"><div class="grow">Aucune donnée pour l\'instant</div></div>';
+  $('#robotWhen').textContent = data.generated ? `${ago(data.generated)} · ${new Date(data.generated).toLocaleString('fr-FR', { weekday: 'short', hour: '2-digit', minute: '2-digit' })} · ${data.items.length} articles` : '—';
+  const rb = $('#robotBtn');
+  if (data.repo) { rb.href = `https://github.com/${data.repo}/actions/workflows/update.yml`; rb.hidden = false; } else rb.hidden = true;
+  renderSync();
+}
+
+// ----- Synchronisation (Gist privé) -----
+let syncStatus = '', syncTimer = 0, syncing = false;
+const token = () => store.get(TK, '');
+const gistId = () => store.get(GK, '');
+async function gh(path, opts = {}) {
+  const r = await fetch('https://api.github.com' + path, { ...opts, headers: { Authorization: 'Bearer ' + token(), Accept: 'application/vnd.github+json', ...(opts.body ? { 'Content-Type': 'application/json' } : {}) } });
+  if (r.status === 401) throw new Error('jeton refusé');
+  if (!r.ok) throw new Error('GitHub ' + r.status);
+  return r.json();
+}
+function renderSync() {
+  const box = $('#syncBox');
+  if (!token()) {
+    box.innerHTML = `<div class="item"><div class="grow"><input type="password" id="tokIn" placeholder="Colle ton jeton GitHub (ghp_…)" autocomplete="off" autocapitalize="off" spellcheck="false"></div></div>
+      <div class="item"><div class="grow"><small>${esc(syncStatus) || 'Lus, « À lire » et réglages, partagés entre tes appareils.'}</small></div><button class="btn primary" id="tokGo">Activer</button></div>`;
+    $('#tokGo').onclick = async () => {
+      const v = $('#tokIn').value.trim(); if (!v) return;
+      store.set(TK, v); syncStatus = 'Connexion…'; renderSync();
+      try { await setupGist(); await sync(true); }
+      catch (e) { store.del(TK); store.del(GK); syncStatus = 'Échec : ' + e.message; renderSync(); }
+    };
+  } else {
+    box.innerHTML = `<div class="item"><div class="grow">Synchronisation active<small>${esc(syncStatus || '—')}</small></div><button class="btn" id="syncNow">Synchroniser</button></div>
+      <div class="item"><div class="grow"><small>Retirer le jeton de cet appareil (les données restent sur les autres).</small></div><button class="btn" id="syncOff">Retirer</button></div>`;
+    $('#syncNow').onclick = () => sync(true);
+    $('#syncOff').onclick = () => { store.del(TK); store.del(GK); syncStatus = 'Jeton retiré de cet appareil.'; renderSync(); };
+  }
+}
+async function setupGist() {
+  if (gistId()) return;
+  const list = await gh('/gists?per_page=100');
+  const found = list.find(g => g.files && g.files[SYNC_FILE]);
+  if (found) { store.set(GK, found.id); return; }
+  const g = await gh('/gists', { method: 'POST', body: JSON.stringify({ description: "L'actu — synchronisation (ne pas supprimer)", public: false, files: { [SYNC_FILE]: { content: JSON.stringify(state) } } }) });
+  store.set(GK, g.id);
+}
+function merge(a, b) {
+  const m = { ...a.m };
+  for (const [id, e] of Object.entries(b.m || {})) if (!m[id] || (e.t || 0) > (m[id].t || 0)) m[id] = e;
+  const cut = Date.now() - 30 * 864e5;
+  for (const [id, e] of Object.entries(m)) if (!e.l && (e.t || 0) < cut) delete m[id];
+  const s = (b.s && (b.s.t || 0) > (a.s?.t || 0)) ? b.s : a.s;
+  return { m, s: s || { theme: 'auto', t: 0 } };
+}
+async function sync(manual) {
+  if (!token() || syncing) return;
+  syncing = true;
+  try {
+    await setupGist();
+    const g = await gh('/gists/' + gistId());
+    const f = g.files[SYNC_FILE];
+    let remote = { m: {}, s: {} };
+    if (f) { let txt = f.content; if (f.truncated) txt = await (await fetch(f.raw_url)).text(); try { remote = JSON.parse(txt); } catch {} }
+    const merged = merge(state, remote);
+    const changedLocal = JSON.stringify(merged) !== JSON.stringify(state);
+    state = merged; store.set(LS, state);
+    if (JSON.stringify(merged) !== JSON.stringify(remote)) {
+      await gh('/gists/' + gistId(), { method: 'PATCH', body: JSON.stringify({ files: { [SYNC_FILE]: { content: JSON.stringify(merged) } } }) });
+    }
+    syncStatus = 'Synchronisé à ' + new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    if (changedLocal || manual) { applyTheme(); render(); } else if (tab === 'settings') renderSync();
+  } catch (e) {
+    if (e.message === 'GitHub 404') store.del(GK);
+    syncStatus = 'Erreur de synchro : ' + e.message;
+    if (tab === 'settings') renderSync();
+  } finally { syncing = false; }
+}
+function scheduleSync() { if (!token()) return; clearTimeout(syncTimer); syncTimer = setTimeout(() => sync(false), 2500); }
+
+// ----- Chargement -----
+async function load() {
+  let failed = false;
+  try {
+    const r = await fetch('data.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) throw new Error(r.status);
+    data = await r.json();
+    if (data.app?.name) { $('#appName').textContent = data.app.name; document.title = data.app.name; }
+  } catch (e) {
+    failed = true;
+    if (!data.items.length) $('#list').innerHTML = '<div class="empty"><b>⏳</b>Pas encore d\'articles.<br>Le robot n\'a peut-être pas encore tourné.</div>';
+  }
+  loadedAt = Date.now();
+  if (!failed || data.items.length || tab !== 'inbox') render();
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  if (Date.now() - loadedAt > 5 * 60e3) load();
+  sync(false);
+});
+setInterval(renderUpd, 60e3);
+$('#appName').addEventListener('click', () => { load(); sync(false); });
+
+applyTheme(); render(); load().then(() => sync(false));
+</script>
+</body>
+</html>
