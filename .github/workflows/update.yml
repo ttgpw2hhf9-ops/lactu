@@ -1,0 +1,63 @@
+name: Mise à jour de L'actu
+
+on:
+  schedule:
+    - cron: '17 */2 * * *'
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+  actions: write
+
+concurrency:
+  group: lactu
+  cancel-in-progress: false
+
+jobs:
+  robot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Récupérer les articles
+        run: node scripts/update.mjs
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Publier le site
+        id: deploy
+        uses: actions/deploy-pages@v4
+
+      - name: Garder le robot actif (anti-pause des 60 jours)
+        if: github.event_name != 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X PUT "repos/${GITHUB_REPOSITORY}/actions/workflows/update.yml/enable" || true
+          last=$(git log -1 --format=%ct)
+          days=$(( ( $(date +%s) - last ) / 86400 ))
+          echo "Dernier dépôt il y a $days jours"
+          if [ "$days" -ge 45 ]; then
+            date -u +%Y-%m-%dT%H:%MZ > keepalive.txt
+            git config user.name "robot-lactu"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add keepalive.txt
+            git commit -m "keepalive : le robot reste actif"
+            git push
+          fi
